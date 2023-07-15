@@ -5,8 +5,8 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
-
 public class Utils {
+
     // UNICODE 0x23 = #
     public static final byte[] UNICODE_TEXT = new byte[] {0x23, 0x23, 0x23,
             0x23, 0x23, 0x23,0x23, 0x23, 0x23,0x23, 0x23, 0x23,0x23, 0x23, 0x23,
@@ -84,6 +84,7 @@ public class Utils {
         commandList.add(commandHexString+widthHexString+heightHexString);
         commandList.addAll(bmpHexList);
 
+
         return hexList2Byte(commandList);
     }
 
@@ -134,11 +135,11 @@ public class Utils {
             return null;
         }
         hexString = hexString.toUpperCase();
-        int length = hexString.length() / 2;
+        int length = hexString.length() / 2 ;
         char[] hexChars = hexString.toCharArray();
         byte[] d = new byte[length];
         for (int i = 0; i < length; i++) {
-            int pos = i * 2;
+            int pos = i *  2;
             d[i] = (byte) (charToByte(hexChars[pos]) << 4 | charToByte(hexChars[pos + 1]));
         }
         return d;
@@ -161,4 +162,8 @@ public class Utils {
     private static byte charToByte(char c) {
         return (byte) "0123456789ABCDEF".indexOf(c);
     }
+
+
+
+
 }

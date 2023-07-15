@@ -1,7 +1,5 @@
 package com.example.pos_printer;
 
-import static androidx.core.app.ActivityCompat.startActivityForResult;
-
 import android.Manifest;
 import android.app.Activity;
 import android.app.Application;
@@ -207,25 +205,29 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
       case "state":
         state(result);
         break;
-      case "turnOn":
-      Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-      activity.startActivityForResult(enableBtIntent, 1);
-      if (mBluetoothAdapter.isEnabled()) {
-        result.success(true);
-      } else {
-        result.success(false);
-      }
-        break;
-        case "offBluetooth":
-        // Do something when turn of ;
+      case "turnOffOn":
+         try {
+           if (mBluetoothAdapter.isEnabled()) {
+             // Handle when ble is on
+
+           }
+           else {
+             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+             activity.startActivityForResult(enableBtIntent, 1);
+           }
+           result.success(true);
+         } catch (Exception ex){
+           result.error("Error",ex.getMessage(),exceptionToString(ex));
+         }
+          break;
+
+      // Do something when turn of ;
       case "isAvailable":
         result.success(mBluetoothAdapter != null);
         break;
 
       case "isOn":
         try {
-
-//          startActivityForResult(enableBtIntent);
           result.success(mBluetoothAdapter.isEnabled());
         } catch (Exception ex) {
           result.error("Error", ex.getMessage(), exceptionToString(ex));
@@ -894,7 +896,7 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
       Bitmap bmp = BitmapFactory.decodeFile(pathImage);
       if (bmp != null) {
         byte[] command = Utils.decodeBitmap(bmp);
-        THREAD.write(PrinterCommands.ESC_ALIGN_CENTER);
+        // THREAD.write(PrinterCommands.ESC_ALIGN_CENTER);
         THREAD.write(command);
       } else {
         Log.e("Print Photo error", "the file isn't exists");
@@ -915,7 +917,7 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
       Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
       if (bmp != null) {
         byte[] command = Utils.decodeBitmap(bmp);
-        THREAD.write(PrinterCommands.ESC_ALIGN_CENTER);
+//        THREAD.write(PrinterCommands.ESC_ALIGN_CENTER);
         THREAD.write(command);
       } else {
         Log.e("Print Photo error", "the file isn't exists");
