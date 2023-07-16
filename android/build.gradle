@@ -5,10 +5,11 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.0'
+        classpath 'com.android.tools.build:gradle:7.3.1'
     }
 }
 
@@ -16,6 +17,8 @@ rootProject.allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url "https://maven.andob.info/repository/open_source" }
+
     }
 }
 
@@ -35,8 +38,9 @@ android {
 
     dependencies {
         testImplementation 'junit:junit:4.13.2'
-        testImplementation 'org.mockito:mockito-core:5.0.0'
+        testImplementation 'org.mockito:mockito-core:5.1.1'
         implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
+        implementation 'ro.andob.androidawt:androidawt:1.0.4'
 
     }
 

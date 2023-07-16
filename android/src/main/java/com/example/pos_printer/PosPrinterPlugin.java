@@ -140,9 +140,7 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
       stateChannel.setStreamHandler(stateStreamHandler);
       EventChannel readChannel = new EventChannel(messenger, NAMESPACE + "/read");
       readChannel.setStreamHandler(readResultsHandler);
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-        mBluetoothManager = (BluetoothManager) application.getSystemService(Context.BLUETOOTH_SERVICE);
-      }
+      mBluetoothManager = (BluetoothManager) application.getSystemService(Context.BLUETOOTH_SERVICE);
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
         mBluetoothAdapter = mBluetoothManager.getAdapter();
       }
@@ -508,7 +506,7 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
           return;
         }
 
-        if (THREAD != null && device.ACTION_ACL_CONNECTED.equals(new Intent(BluetoothDevice.ACTION_ACL_CONNECTED).getAction())) {
+        if (THREAD != null && BluetoothDevice.ACTION_ACL_CONNECTED.equals(new Intent(BluetoothDevice.ACTION_ACL_CONNECTED).getAction())) {
           result.success(true);
         }else{
           result.success(false);
@@ -893,7 +891,8 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
       return;
     }
     try {
-      Bitmap bmp = BitmapFactory.decodeFile(pathImage);
+      Bitmap bmp = Utils.resizeImage(pathImage);
+//      Bitmap bmp = BitmapFactory.decodeFile(String.valueOf(finalImagepath));
       if (bmp != null) {
         byte[] command = Utils.decodeBitmap(bmp);
         // THREAD.write(PrinterCommands.ESC_ALIGN_CENTER);
