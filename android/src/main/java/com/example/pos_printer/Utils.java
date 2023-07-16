@@ -5,19 +5,13 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.util.Log;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReadParam;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
 
 public class Utils {
 
@@ -207,67 +201,7 @@ public class Utils {
         return null;
     }
 
-    private static byte[] getBitmapPixels(Bitmap bitmap) {
-        int bytes = bitmap.getByteCount();
-        ByteBuffer buffer = ByteBuffer.allocate(bytes);
-        bitmap.copyPixelsToBuffer(buffer);
-        byte[] pixels = buffer.array();
 
-        // The Android Bitmap stores the color channels as RGBA, but the BufferedImage expects ARGB format.
-        // Swap the R and B channels to convert from RGBA to ARGB.
-        for (int i = 0; i < pixels.length; i += 4) {
-            byte temp = pixels[i];
-            pixels[i] = pixels[i + 2];
-            pixels[i + 2] = temp;
-        }
-
-        return pixels;
-    }
-    public static Bitmap convert(BufferedImage bufferedImage) {
-        // Get image data as byte array
-        DataBufferByte dataBufferByte = (DataBufferByte) bufferedImage.getRaster().getDataBuffer();
-        byte[] data = dataBufferByte.getData();
-
-        // Create a Bitmap from the byte array
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888; // Adjust according to your needs
-        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
-
-        return bitmap;
-    }
-
-
-    public  static  BufferedImage readImage(File inputFile) throws IOException {
-         System.out.println("File Path : "+inputFile);
-        ImageInputStream input = null;
-        try {
-            input = ImageIO.createImageInputStream(inputFile);
-            System.out.println("Input Stream Value : "+input);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        BufferedImage inputImage = null;
-
-        Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
-        System.out.println("Readers  data : "+readers);
-        if (!readers.hasNext()) {
-            throw new IllegalArgumentException("No reader found for the given image file");
-        }
-
-        ImageReader reader = readers.next();
-        reader.setInput(input);
-
-        int numTiles = reader.getNumImages(true);
-        System.out.println("Num Title : "+numTiles);
-        for (int i = 0; i < numTiles; i++) {
-            ImageReadParam param = reader.getDefaultReadParam();
-            inputImage = reader.read(i, param);
-
-        }
-
-        reader.dispose();
-        return inputImage;
-    }
 
 }
 

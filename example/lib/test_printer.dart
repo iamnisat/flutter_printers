@@ -26,8 +26,10 @@ class TestPrint {
     Uint8List imageBytesFromAsset = bytesAsset.buffer
         .asUint8List(bytesAsset.offsetInBytes, bytesAsset.lengthInBytes);
     final temDir = await getTemporaryDirectory();
+  
 
-    final fileImage = File('${temDir.path}/${DateTime.now().toIso8601String()}.png');
+    final fileImage =
+        File('${temDir.path}/${DateTime.now().toIso8601String()}.png');
     final locaiton = await fileImage.writeAsBytes(imageBytesFromAsset);
     debugPrint('fileImage: ${locaiton.path}');
 

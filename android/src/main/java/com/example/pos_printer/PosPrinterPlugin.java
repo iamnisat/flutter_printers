@@ -892,11 +892,11 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
     }
     try {
       Bitmap bmp = Utils.resizeImage(pathImage);
-//      Bitmap bmp = BitmapFactory.decodeFile(String.valueOf(finalImagepath));
+      System.out.println("Bitmap Size : "+bmp.getWidth());
       if (bmp != null) {
         byte[] command = Utils.decodeBitmap(bmp);
-        // THREAD.write(PrinterCommands.ESC_ALIGN_CENTER);
-        THREAD.write(command);
+        System.out.println("Byte Length : "+command);
+        THREAD.write(Utils.decodeBitmap(bmp));
       } else {
         Log.e("Print Photo error", "the file isn't exists");
       }
@@ -1003,6 +1003,7 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
     public void write(byte[] bytes) {
       try {
         outputStream.write(bytes);
+
       } catch (IOException e) {
         e.printStackTrace();
       }
