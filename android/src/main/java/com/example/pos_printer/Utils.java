@@ -182,23 +182,22 @@ public class Utils {
 
         int newWidth = 400; // Desired width in pixels
         try {
-            // Read the original image
-            BitmapFactory.Options options = new BitmapFactory.Options();
-//            options.inJustDecodeBounds = true; // Obtain image size without loading it into memory
+            Bitmap originalBitmap = BitmapFactory.decodeFile(imagePath);
 
-            BitmapFactory.decodeFile(imagePath, options);
+            // Set the target width for the printer
+            int printerWidth = 58; // in millimeters
 
-            int originalWidth = options.outWidth;
-            int originalHeight = options.outHeight;
-            int newHeight = (int) (((double) newWidth / originalWidth) * originalHeight);
+            // Convert the target width from millimeters to pixels (assuming 72 pixels per inch density)
+            int targetWidthPixels = (int) (printerWidth * 230 / 27);
 
+            int originalWidth = originalBitmap.getWidth();
+            int originalHeight = originalBitmap.getHeight();
 
-            Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
+            // Calculate the target height while maintaining the aspect ratio
+            int targetHeight = (int) (originalHeight * ((float) targetWidthPixels / originalWidth));
 
-            // Create a matrix for the resizing and apply it to the bitmap
-            Matrix matrix = new Matrix();
-            matrix.postScale(newWidth / (float)bitmap.getWidth(), newHeight / (float)bitmap.getHeight());
-            Bitmap resizedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
+            // Create a new bitmap with the target dimensions
+            Bitmap resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, targetWidthPixels, targetHeight, true);
 
             return resizedBitmap;
 
