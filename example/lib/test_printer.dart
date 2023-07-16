@@ -1,7 +1,8 @@
-
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:pos_printer/blue_pos_printer.dart';
-
+import 'package:path_provider/path_provider.dart';
 
 ///Test printing
 class TestPrint {
@@ -19,9 +20,16 @@ class TestPrint {
 
     ///image from Asset
     String prescriptionImage = 'assets/prescription.png';
+    String lowPrescription = 'assets/low_prescription.png';
+
     ByteData bytesAsset = await rootBundle.load(prescriptionImage);
     Uint8List imageBytesFromAsset = bytesAsset.buffer
         .asUint8List(bytesAsset.offsetInBytes, bytesAsset.lengthInBytes);
+    final temDir = await getTemporaryDirectory();
+
+    final fileImage = File('${temDir.path}/${DateTime.now().toIso8601String()}.png');
+    final locaiton = await fileImage.writeAsBytes(imageBytesFromAsset);
+    debugPrint('fileImage: ${locaiton.path}');
 
     ///image from Network
     // var response = await http.get(Uri.parse(
@@ -37,7 +45,9 @@ class TestPrint {
         // bluetooth.printNewLine();
         // // bluetooth.printImage(file.path); //path of your image/logo
         // bluetooth.printNewLine();
-        bluetooth.printImageBytes(imageBytesFromAsset); //image from Asset
+        // bluetooth.printImageBytes(imageBytesFromAsset);
+        bluetooth.printImage(locaiton.path); //image from Asset
+//image from Asset
         // bluetooth.printNewLine();
         // bluetooth.printImageBytes(imageBytesFromNetwork); //image from Network
         // bluetooth.printNewLine();
