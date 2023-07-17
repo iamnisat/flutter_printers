@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:pos_printer/blue_pos_printer.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'printer_enum.dart';
+
 ///Test printing
 class TestPrint {
   BlueThermalPrinter bluetooth = BlueThermalPrinter.instance;
@@ -23,70 +25,73 @@ class TestPrint {
     String lowPrescription = 'assets/low_prescription.png';
 
     ByteData bytesAsset = await rootBundle.load(prescriptionImage);
+    debugPrint('bytesAsset: ${bytesAsset.lengthInBytes}');
     Uint8List imageBytesFromAsset = bytesAsset.buffer
         .asUint8List(bytesAsset.offsetInBytes, bytesAsset.lengthInBytes);
+    debugPrint('imageBytesFromAsset: ${imageBytesFromAsset.length}');
     final temDir = await getTemporaryDirectory();
-  
 
     final fileImage =
         File('${temDir.path}/${DateTime.now().toIso8601String()}.png');
     final locaiton = await fileImage.writeAsBytes(imageBytesFromAsset);
+    debugPrint('FFFFFFF: ${locaiton.path}');
     debugPrint('fileImage: ${locaiton.path}');
 
     ///image from Network
-    // var response = await http.get(Uri.parse(
-    //     "https://raw.githubusercontent.com/kakzaki/blue_thermal_printer/master/example/assets/images/yourlogo.png"));
+
     // Uint8List bytesNetwork = response.bodyBytes;
     // Uint8List imageBytesFromNetwork = bytesNetwork.buffer
     //     .asUint8List(bytesNetwork.offsetInBytes, bytesNetwork.lengthInBytes);
 
-    bluetooth.isConnected.then((isConnected) {
+    bluetooth.isConnected.then((isConnected) async {
       if (isConnected == true) {
-        // bluetooth.printNewLine();
-        // bluetooth.printCustom("HEADER", Size.boldMedium.val, Align.center.val);
-        // bluetooth.printNewLine();
-        // // bluetooth.printImage(file.path); //path of your image/logo
-        // bluetooth.printNewLine();
-        // bluetooth.printImageBytes(imageBytesFromAsset);
+//         // bluetooth.printNewLine();
+//         // bluetooth.printCustom("HEADER ", Size.boldMedium.val, Align.center.val);
+//         // bluetooth.printNewLine();
+//         // // bluetooth.printImage(file.path); //path of your image/logo
+//         // bluetooth.printNewLine();
+//         bluetooth.printImageBytes(imageBytesFromAsset);
         bluetooth.printImage(locaiton.path); //image from Asset
-//image from Asset
-        // bluetooth.printNewLine();
-        // bluetooth.printImageBytes(imageBytesFromNetwork); //image from Network
-        // bluetooth.printNewLine();
-        // bluetooth.printLeftRight("LEFT", "RIGHT", Size.medium.val);
-        // bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val);
-        // bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val,
-        //     format:
-        //         "%-15s %15s %n"); //15 is number off character from left or right
-        // bluetooth.printNewLine();
-        // bluetooth.printLeftRight("LEFT", "RIGHT", Size.boldMedium.val);
-        // bluetooth.printLeftRight("LEFT", "RIGHT", Size.boldLarge.val);
-        // bluetooth.printLeftRight("LEFT", "RIGHT", Size.extraLarge.val);
-        // bluetooth.printNewLine();
-        // bluetooth.print3Column("Col1", "Col2", "Col3", Size.bold.val);
-        // bluetooth.print3Column("Col1", "Col2", "Col3", Size.bold.val,
-        //     format:
-        //         "%-10s %10s %10s %n"); //10 is number off character from left center and right
-        // bluetooth.printNewLine();
-        // bluetooth.print4Column("Col1", "Col2", "Col3", "Col4", Size.bold.val);
-        // bluetooth.print4Column("Col1", "Col2", "Col3", "Col4", Size.bold.val,
-        //     format: "%-8s %7s %7s %7s %n");
-        // bluetooth.printNewLine();
-        // bluetooth.printCustom("čĆžŽšŠ-H-ščđ", Size.bold.val, Align.center.val,
-        //     charset: "windows-1250");
-        // bluetooth.printLeftRight("Številka:", "18000001", Size.bold.val,
-        //     charset: "windows-1250");
-        // bluetooth.printCustom("Body left", Size.bold.val, Align.left.val);
-        // bluetooth.printCustom("Body right", Size.medium.val, Align.right.val);
-        // bluetooth.printNewLine();
-        // bluetooth.printCustom("Thank You", Size.bold.val, Align.center.val);
-        // bluetooth.printNewLine();
-        // bluetooth.printQRcode(
-        //     "Insert Your Own Text to Generate", 200, 200, Align.center.val);
-        // bluetooth.printNewLine();
+// //image from Asset
+//         // bluetooth.printNewLine();
+//         // bluetooth.printImageBytes(imageBytesFromNetwork); //image from Network
+//         // bluetooth.printNewLine();
+//         // bluetooth.printLeftRight("LEFT", "RIGHT", Size.medium.val);
+//         // bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val);
+//         // bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val,
+//         //     format:
+//         //         "%-15s %15s %n"); //15 is number off character from left or right
+//         // bluetooth.printNewLine();
+//         // bluetooth.printLeftRight("LEFT", "RIGHT", Size.boldMedium.val);
+//         // bluetooth.printLeftRight("LEFT", "RIGHT", Size.boldLarge.val);
+//         // bluetooth.printLeftRight("LEFT", "RIGHT", Size.extraLarge.val);
+//         // bluetooth.printNewLine();
+//         // bluetooth.print3Column("Col1", "Col2", "Col3", Size.bold.val);
+//         // bluetooth.print3Column("Col1", "Col2", "Col3", Size.bold.val,
+//         //     format:
+//         //         "%-10s %10s %10s %n"); //10 is number off character from left center and right
+//         // bluetooth.printNewLine();
+//         // bluetooth.print4Column("Col1", "Col2", "Col3", "Col4", Size.bold.val);
+//         // bluetooth.print4Column("Col1", "Col2", "Col3", "Col4", Size.bold.val,
+//         //     format: "%-8s %7s %7s %7s %n");
+//         // bluetooth.printNewLine();
+//         // bluetooth.printCustom("čĆžŽšŠ-H-ščđ", Size.bold.val, Align.center.val,
+//         //     charset: "windows-1250");
+//         // bluetooth.printLeftRight("Številka:", "18000001", Size.bold.val,
+//         //     charset: "windows-1250");
+//         // bluetooth.printCustom("Body left", Size.bold.val, Align.left.val);
+//         // bluetooth.printCustom("Body right", Size.medium.val, Align.right.val);
+//         // bluetooth.printNewLine();
+//         // bluetooth.printCustom("Thank You", Size.bold.val, Align.center.val);
+//         // bluetooth.printNewLine();
+//         // bluetooth.printQRcode(
+//         //     "Insert Your Own Text to Generate", 200, 200, Align.center.val);
+//         // bluetooth.printNewLine();
         bluetooth.printNewLine();
-        bluetooth
-            .paperCut(); //some printer not supported (sometime making image not centered)
+        bluetooth.printNewLine();
+
+        // bluetooth
+        //     .paperCut(); //some printer not supported (sometime making image not centered)
         //bluetooth.drawerPin2(); // or you can use bluetooth.drawerPin5();
       }
     });

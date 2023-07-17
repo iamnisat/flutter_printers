@@ -92,7 +92,6 @@ public class Utils {
         commandList.add(commandHexString+widthHexString+heightHexString);
         commandList.addAll(bmpHexList);
 
-
         return hexList2Byte(commandList);
     }
 

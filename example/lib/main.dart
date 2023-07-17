@@ -122,6 +122,18 @@ class _MyAppState extends State<MyApp> {
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Blue Thermal Printer'),
+          actions: [
+            IconButton(
+                onPressed: () async {
+                  bluetooth.printNewLine();
+                  bluetooth.printNewLine();
+                  bluetooth.printNewLine();
+                  bluetooth.printNewLine();
+                  bluetooth.printNewLine();
+                  bluetooth.paperCut();
+                },
+                icon: Icon(Icons.clear))
+          ],
         ),
         body: Padding(
           padding: const EdgeInsets.all(8.0),

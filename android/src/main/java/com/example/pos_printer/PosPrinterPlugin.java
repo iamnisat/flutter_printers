@@ -35,6 +35,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -849,7 +850,10 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
       return;
     }
     try {
-      THREAD.write(PrinterCommands.FEED_PAPER_AND_CUT);
+
+      String POS = "POS";
+//    THREAD.write(PrinterCommands.FEED_PAPER_AND_CUT);
+      THREAD.write(POS.getBytes());
       result.success(true);
     } catch (Exception ex) {
       Log.e(TAG, ex.getMessage(), ex);
@@ -892,11 +896,12 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
     }
     try {
       Bitmap bmp = Utils.resizeImage(pathImage);
+
       System.out.println("Bitmap Size : "+bmp.getWidth());
       if (bmp != null) {
-        byte[] command = Utils.decodeBitmap(bmp);
-        System.out.println("Byte Length : "+command);
-        THREAD.write(Utils.decodeBitmap(bmp));
+        byte [] command = Utils.decodeBitmap(bmp);
+        THREAD.write(PrinterCommands.ESC_ALIGN_CENTER);
+        THREAD.write(command);
       } else {
         Log.e("Print Photo error", "the file isn't exists");
       }
