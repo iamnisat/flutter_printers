@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:pos_printer/blue_pos_printer.dart';
 import 'package:pos_printer_example/test_printer.dart';
+import 'printer_enum.dart' as PrinterEnum;
 
 void main() => runApp(const MyApp());
 
@@ -125,11 +126,19 @@ class _MyAppState extends State<MyApp> {
           actions: [
             IconButton(
                 onPressed: () async {
-                  bluetooth.printNewLine();
-                  bluetooth.printNewLine();
-                  bluetooth.printNewLine();
-                  bluetooth.printNewLine();
-                  bluetooth.printNewLine();
+                  // bluetooth.printNewLine();
+                  // bluetooth.printNewLine();
+                  // bluetooth.printNewLine();
+                  // bluetooth.printNewLine();
+                  // bluetooth.printNewLine();
+                  // bluetooth.printCustom(
+                  //     "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. ",
+                  //     PrinterEnum.Size.boldMedium.val,
+                  //     PrinterEnum.Align.center.val);
+                  // bluetooth.printNewLine();
+                  // bluetooth.printNewLine();
+                  // bluetooth.printNewLine();
+                  // bluetooth.printNewLine();
                   bluetooth.paperCut();
                 },
                 icon: Icon(Icons.clear))

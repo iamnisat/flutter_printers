@@ -29,11 +29,13 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -850,10 +852,13 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
       return;
     }
     try {
-
-      String POS = "POS";
+      byte[] clearCommand = new byte[]{0x1B, 0x40};
+      System.out.println("CLear Printer Buffer Data");
 //    THREAD.write(PrinterCommands.FEED_PAPER_AND_CUT);
-      THREAD.write(POS.getBytes());
+
+      THREAD.write(clearCommand);
+//      THREAD.outputStream.flush();
+//      THREAD.cancel();
       result.success(true);
     } catch (Exception ex) {
       Log.e(TAG, ex.getMessage(), ex);
@@ -898,10 +903,22 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
       Bitmap bmp = Utils.resizeImage(pathImage);
 
       System.out.println("Bitmap Size : "+bmp.getWidth());
+
       if (bmp != null) {
         byte [] command = Utils.decodeBitmap(bmp);
-        THREAD.write(PrinterCommands.ESC_ALIGN_CENTER);
+        Log.i(TAG,"Printer Byte Data Length : "+command.length);
+        Log.i(TAG,"Printer Byte Data : "+command);
+        Log.i(TAG,"Byte Data : "+Utils.decodeBitmap(bmp));
+        Log.i(TAG,"Byte Data Length : "+Utils.decodeBitmap(bmp).length);
+
+        byte marker = 0x0A;
         THREAD.write(command);
+        THREAD.outputStream.flush();
+        THREAD.write(PrinterCommands.INIT);
+        THREAD.outputStream.flush();
+        THREAD.outputStream.close();
+        THREAD.inputStream.close();
+        THREAD.mmSocket.close();
       } else {
         Log.e("Print Photo error", "the file isn't exists");
       }
@@ -911,6 +928,7 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
       result.error("write_error", ex.getMessage(), exceptionToString(ex));
     }
   }
+
 
   private void printImageBytes(Result result, byte[] bytes) {
     if (THREAD == null) {

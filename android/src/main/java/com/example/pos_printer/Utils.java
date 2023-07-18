@@ -133,6 +133,7 @@ public class Utils {
         for (String hexStr : list) {
             commandList.add(hexStringToBytes(hexStr));
         }
+
         byte[] bytes = sysCopy(commandList);
         return bytes;
     }

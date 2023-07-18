@@ -34,8 +34,8 @@ class TestPrint {
     final fileImage =
         File('${temDir.path}/${DateTime.now().toIso8601String()}.png');
     final locaiton = await fileImage.writeAsBytes(imageBytesFromAsset);
-    debugPrint('FFFFFFF: ${locaiton.path}');
     debugPrint('fileImage: ${locaiton.path}');
+      //  temDir.delete(recursive: true);
 
     ///image from Network
 
@@ -46,15 +46,16 @@ class TestPrint {
     bluetooth.isConnected.then((isConnected) async {
       if (isConnected == true) {
 //         // bluetooth.printNewLine();
-//         // bluetooth.printCustom("HEADER ", Size.boldMedium.val, Align.center.val);
+        // bluetooth.printCustom("HEADER ", Size.boldMedium.val, Align.center.val);
 //         // bluetooth.printNewLine();
 //         // // bluetooth.printImage(file.path); //path of your image/logo
 //         // bluetooth.printNewLine();
 //         bluetooth.printImageBytes(imageBytesFromAsset);
         bluetooth.printImage(locaiton.path); //image from Asset
+        // bluetooth.printImageBytes(bytesAsset.buffer.asUint8List(bytesAsset.offsetInBytes, bytesAsset.lengthInBytes));
 // //image from Asset
 //         // bluetooth.printNewLine();
-//         // bluetooth.printImageBytes(imageBytesFromNetwork); //image from Network
+//         // bluetooth.printImageBytes(imageBytesFromNetwork); //image from Networkr
 //         // bluetooth.printNewLine();
 //         // bluetooth.printLeftRight("LEFT", "RIGHT", Size.medium.val);
 //         // bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val);
@@ -87,9 +88,8 @@ class TestPrint {
 //         // bluetooth.printQRcode(
 //         //     "Insert Your Own Text to Generate", 200, 200, Align.center.val);
 //         // bluetooth.printNewLine();
-        bluetooth.printNewLine();
-        bluetooth.printNewLine();
-
+        // bluetooth.printNewLine();
+        // bluetooth.printNewLine();
         // bluetooth
         //     .paperCut(); //some printer not supported (sometime making image not centered)
         //bluetooth.drawerPin2(); // or you can use bluetooth.drawerPin5();
