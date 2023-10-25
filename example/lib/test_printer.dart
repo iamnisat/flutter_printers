@@ -23,8 +23,9 @@ class TestPrint {
     ///image from Asset
     String prescriptionImage = 'assets/prescription.png';
     String lowPrescription = 'assets/low_prescription.png';
+    String longPrescription = 'assets/long_prescription.jpg';
 
-    ByteData bytesAsset = await rootBundle.load(prescriptionImage);
+    ByteData bytesAsset = await rootBundle.load(longPrescription);
     debugPrint('bytesAsset: ${bytesAsset.lengthInBytes}');
     Uint8List imageBytesFromAsset = bytesAsset.buffer
         .asUint8List(bytesAsset.offsetInBytes, bytesAsset.lengthInBytes);
@@ -32,7 +33,7 @@ class TestPrint {
     final temDir = await getTemporaryDirectory();
 
     final fileImage =
-        File('${temDir.path}/${DateTime.now().toIso8601String()}.png');
+        File('${temDir.path}/${DateTime.now().toIso8601String()}.jpg');
     final locaiton = await fileImage.writeAsBytes(imageBytesFromAsset);
     debugPrint('fileImage: ${locaiton.path}');
       //  temDir.delete(recursive: true);
