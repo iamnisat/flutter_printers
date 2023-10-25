@@ -174,7 +174,7 @@ public class Utils {
 
             // Set the target width for the printer
             int printerWidth = 58; // in millimeters
-            int printerDPI = 300; // dots per inch
+            int printerDPI = 80; // dots per inch
 
             // Convert the target width from millimeters to pixels (assuming 72 pixels per inch density)
             int targetWidthPixels = (int) (printerWidth / 25.4  * printerDPI);
