@@ -174,7 +174,7 @@ public class Utils {
 
             // Set the target width for the printer
             int printerWidth = 58; // in millimeters
-            int printerDPI = 40; // dots per inch
+            int printerDPI = 700; // dots per inch
 
             // Convert the target width from millimeters to pixels (assuming 72 pixels per inch density)
             int targetWidthPixels = (int) (printerWidth / 25.4  * printerDPI);
@@ -187,9 +187,11 @@ public class Utils {
             // Calculate the target height while maintaining the aspect ratio
             int targetHeight = (int) (originalHeight * ((float) targetWidthPixels / originalWidth));
             newWidth = (int) (targetWidthPixels * aspectRatio);
+            Log.i("New Width", "New Width: " + newWidth);
+            Log.i("height","New Height: " + targetWidthPixels);
 
             // Create a new bitmap with the target dimensions
-            Bitmap resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth,targetWidthPixels, true);
+            Bitmap resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, 360,1598, true);
 
 //            Bitmap resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, targetWidthPixels, targetHeight, true);
 
