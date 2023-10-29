@@ -2,8 +2,11 @@ package com.example.pos_printer;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Environment;
 import android.util.Log;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -168,32 +171,25 @@ public class Utils {
     // Resize Image based on printer Paper Size Like 58 mm , 55 mm
     public static Bitmap resizeImage(String imagePath) {
          Log.i("ResizeImage", "resizeImage: " + imagePath);
-        int newWidth = 400; // Desired width in pixels
         try {
+
             Bitmap originalBitmap = BitmapFactory.decodeFile(imagePath);
 
             // Set the target width for the printer
             int printerWidth = 58; // in millimeters
-            int printerDPI = 700; // dots per inch
+            int printerDPI = 175; // dots per inch, This will maintain width
 
             // Convert the target width from millimeters to pixels (assuming 72 pixels per inch density)
             int targetWidthPixels = (int) (printerWidth / 25.4  * printerDPI);
-
-            double aspectRatio = (double) originalBitmap.getWidth() / (double) originalBitmap.getHeight();
 
             int originalWidth = originalBitmap.getWidth();
             int originalHeight = originalBitmap.getHeight();
 
             // Calculate the target height while maintaining the aspect ratio
             int targetHeight = (int) (originalHeight * ((float) targetWidthPixels / originalWidth));
-            newWidth = (int) (targetWidthPixels * aspectRatio);
-            Log.i("New Width", "New Width: " + newWidth);
-            Log.i("height","New Height: " + targetWidthPixels);
 
-            // Create a new bitmap with the target dimensions
-            Bitmap resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, 360,1598, true);
 
-//            Bitmap resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, targetWidthPixels, targetHeight, true);
+            Bitmap resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, targetWidthPixels, targetHeight, true);
 
             return resizedBitmap;
 
