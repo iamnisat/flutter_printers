@@ -1,5 +1,8 @@
 package com.example.pos_printer;
 
+
+import static java.lang.Math.log;
+
 import android.Manifest;
 import android.app.Activity;
 import android.app.Application;
@@ -7,6 +10,12 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothSocket;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanRecord;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +27,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.ParcelUuid;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -29,19 +39,20 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
-import java.io.ByteArrayOutputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -56,6 +67,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
 
+
 /** PosPrinterPlugin */
 public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCallHandler, PluginRegistry.RequestPermissionsResultListener {
   /// The MethodChannel that will the communication between Flutter and native Android
@@ -63,6 +75,7 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
   /// when the Flutter Engine is detached from the Activity
   private MethodChannel channel;
+  private Context activeContext;
 
 
   private static final String TAG = "BThermalPrinterPlugin";
@@ -87,7 +100,29 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
 
   private Activity activity;
 
+  private EventSink discoverySink;
 
+  private final Map<String, Integer> mMtu = new ConcurrentHashMap<>();
+  private final Map<String, Boolean> mAutoConnected = new ConcurrentHashMap<>();
+  private final Map<String, String> mWriteChr = new ConcurrentHashMap<>();
+  private final Map<String, String> mWriteDesc = new ConcurrentHashMap<>();
+  private final Map<String, String> mAdvSeen = new ConcurrentHashMap<>();
+  private final Map<String, Integer> mScanCounts = new ConcurrentHashMap<>();
+  private HashMap<String, Object> mScanFilters = new HashMap<String, Object>();
+  private boolean mIsScanning = false;
+  private ScanCallback scanCallback;
+
+
+
+  private final Map<Integer, OperationOnPermission> operationsOnPermission = new HashMap<>();
+  private int lastEventId = 1452;
+
+
+
+
+  private interface OperationOnPermission {
+    void op(boolean granted, String permission);
+  }
   public PosPrinterPlugin() {
   }
 
@@ -144,9 +179,7 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
       EventChannel readChannel = new EventChannel(messenger, NAMESPACE + "/read");
       readChannel.setStreamHandler(readResultsHandler);
       mBluetoothManager = (BluetoothManager) application.getSystemService(Context.BLUETOOTH_SERVICE);
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-        mBluetoothAdapter = mBluetoothManager.getAdapter();
-      }
+      mBluetoothAdapter = mBluetoothManager.getAdapter();
       activityBinding.addRequestPermissionsResultListener(this);
     }
   }
@@ -240,6 +273,7 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
         break;
 
       case "isDeviceConnected":
+        assert arguments != null;
         if (arguments.containsKey("address")) {
           String address = (String) arguments.get("address");
           isDeviceConnected(result, address);
@@ -296,6 +330,7 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
         break;
 
       case "connect":
+        assert arguments != null;
         if (arguments.containsKey("address")) {
           String address = (String) arguments.get("address");
           connect(result, address);
@@ -422,11 +457,278 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
           result.error("invalid_argument", "argument 'message' not found", null);
         }
         break;
+      case "startDiscovering":
+        Log.d(TAG, "Starting discovery");
+      {
+        deviceList.clear();
+        discoverDevices();
+        result.success(deviceList);
+
+
+        break;
+      }
+      case "OnScanResponse":
+      {
+        result.success(deviceList);
+        break;
+      }
+
       default:
         result.notImplemented();
         break;
     }
   }
+  List<Map<String,Object>> deviceList = new ArrayList<Map<String,Object>>();
+  private final Handler handler = new Handler(Looper.getMainLooper());
+  private static final long DISCOVERY_TIMEOUT = 10000; // 10 seconds
+  private void discoverDevices() {
+    context.registerReceiver(discoveryReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+    mBluetoothAdapter.startDiscovery();
+    handler.postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        stopDiscovery();
+      }
+    }, DISCOVERY_TIMEOUT);
+  }
+  private void stopDiscovery() {
+
+    // Cancel discovery
+    mBluetoothAdapter.cancelDiscovery();
+  }
+  private final BroadcastReceiver discoveryReceiver = new BroadcastReceiver() {
+    public void onReceive(Context context, Intent intent) {
+      String action = intent.getAction();
+      if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+
+        // If device is already paired, skip it, because it's been listed already
+        if (device.getBondState() == BluetoothDevice.BOND_BONDED && !containsDeviceWithAddress(deviceList, device.getAddress())){
+            deviceList.add(
+                    new HashMap<String, Object>() {
+                        {
+                        put("name", device.getName());
+                        put("address", device.getAddress());
+                        put("type", device.getType());
+                        put("bondState", device.getBondState());
+                        }
+                    });
+        }
+
+
+
+      }
+    }
+  };
+    // Helper method to check if the list contains a device with a specific address
+    private boolean containsDeviceWithAddress(List<Map<String, Object>> deviceList, String address) {
+      for (Map<String, Object> device : deviceList) {
+        if (address.equals(device.get("address"))) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+  static String bytesToHex(byte[] bytes) {
+    if (bytes == null) {
+      return "";
+    }
+    StringBuilder sb = new StringBuilder();
+    for (byte b : bytes) {
+      sb.append(String.format("%02x", b));
+    }
+    return sb.toString();
+  }
+
+  static byte[] hexToBytes(String s) {
+    if (s == null) {
+      return new byte[0];
+    }
+    int len = s.length();
+    byte[] data = new byte[len / 2];
+
+    for (int i = 0; i < len; i += 2) {
+      data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+              + Character.digit(s.charAt(i+1), 16));
+    }
+
+    return data;
+  }
+  // returns 128-bit representation
+  public String uuid128(Object uuid)
+  {
+    if (!(uuid instanceof UUID) && !(uuid instanceof String)) {
+      throw new IllegalArgumentException("input must be UUID or String");
+    }
+
+    String s = uuid.toString();
+
+    if (s.length() == 4)
+    {
+      // 16-bit uuid
+      return String.format("0000%s-0000-1000-8000-00805f9b34fb", s).toLowerCase();
+    }
+    else if (s.length() == 8)
+    {
+      // 32-bit uuid
+      return String.format("%s-0000-1000-8000-00805f9b34fb", s).toLowerCase();
+    }
+    else
+    {
+      // 128-bit uuid
+      return s.toLowerCase();
+    }
+  }
+
+  private void invokeMethodUIThread(final String method, HashMap<String, Object> data)
+  {
+    new Handler(Looper.getMainLooper()).post(() -> {
+      //Could already be teared down at this moment
+      if (channel != null) {
+        channel.invokeMethod(method, data);
+      } else {
+//        log(FlutterBluePlusPlugin.LogLevel.WARNING, "invokeMethodUIThread: tried to call method on closed channel: " + method);
+      }
+    });
+  }
+  private ScanCallback getScanCallback()
+  {
+    if(scanCallback == null) {
+
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        scanCallback = new ScanCallback()
+        {
+          @Override
+          @SuppressWarnings("unchecked") // type safety uses bluetooth_msgs.dart
+          public void onScanResult(int callbackType, ScanResult result)
+          {
+
+            super.onScanResult(callbackType, result);
+            HashMap<String, Object> response = new HashMap<>();
+
+            BluetoothDevice device = result.getDevice();
+            String remoteId = device.getAddress();
+            ScanRecord scanRecord = result.getScanRecord();
+            String advHex = scanRecord != null ? bytesToHex(scanRecord.getBytes()) : "";
+
+            response.put("remote_id", remoteId);
+            response.put("name", device.getName());
+            response.put("rssi", result.getRssi());
+
+
+
+
+            invokeMethodUIThread("OnScanResponse", response);
+          }
+
+          @Override
+          public void onBatchScanResults(List<ScanResult> results)
+          {
+            super.onBatchScanResults(results);
+          }
+
+          @Override
+          public void onScanFailed(int errorCode)
+          {
+//            log(FlutterBluePlusPlugin.LogLevel.ERROR, "onScanFailed: " + scanFailedString(errorCode));
+
+            super.onScanFailed(errorCode);
+
+            // see BmScanResponse
+            HashMap<String, Object> response = new HashMap<>();
+            response.put("advertisements", new ArrayList<>());
+            response.put("success", 0);
+            response.put("error_code", errorCode);
+            response.put("error_string", scanFailedString(errorCode));
+
+            invokeMethodUIThread("OnScanResponse", response);
+          }
+        };
+      }
+    }
+    return scanCallback;
+  }
+
+  static String scanFailedString(int value) {
+    switch(value) {
+      case ScanCallback.SCAN_FAILED_ALREADY_STARTED                : return "SCAN_FAILED_ALREADY_STARTED";
+      case ScanCallback.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED: return "SCAN_FAILED_APPLICATION_REGISTRATION_FAILED";
+      case ScanCallback.SCAN_FAILED_FEATURE_UNSUPPORTED            : return "SCAN_FAILED_FEATURE_UNSUPPORTED";
+      case ScanCallback.SCAN_FAILED_INTERNAL_ERROR      : return "SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES";
+      default: return "UNKNOWN_SCAN_ERROR (" + value + ")";
+    }
+  }
+
+  private void ensurePermissions(List<String> permissions, OperationOnPermission operation)
+  {
+    // only request permission we don't already have
+    List<String> permissionsNeeded = new ArrayList<>();
+    for (String permission : permissions) {
+      if (permission != null && ContextCompat.checkSelfPermission(context, permission)
+              != PackageManager.PERMISSION_GRANTED) {
+        permissionsNeeded.add(permission);
+      }
+    }
+
+    // no work to do?
+    if (permissionsNeeded.isEmpty()) {
+      operation.op(true, null);
+      return;
+    }
+
+    askPermission(permissionsNeeded, operation);
+  }
+
+  private void askPermission(List<String> permissionsNeeded, OperationOnPermission operation)
+  {
+    // finished asking for permission? call callback
+    if (permissionsNeeded.isEmpty()) {
+      operation.op(true, null);
+      return;
+    }
+
+    String nextPermission = permissionsNeeded.remove(0);
+
+    operationsOnPermission.put(lastEventId, (granted, perm) -> {
+      operationsOnPermission.remove(lastEventId);
+      if (!granted) {
+        operation.op(false, perm);
+        return;
+      }
+      // recursively ask for next permission
+      askPermission(permissionsNeeded, operation);
+    });
+
+    ActivityCompat.requestPermissions(
+            activityBinding.getActivity(),
+            new String[]{nextPermission},
+            lastEventId);
+
+    lastEventId++;
+  }
+
+  private boolean isAdapterOn()
+  {
+    // get adapterState, if we have permission
+    try {
+      return mBluetoothAdapter.getState() == BluetoothAdapter.STATE_ON;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
 
   /**
    * @param requestCode  requestCode
@@ -1089,6 +1391,8 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
       context.unregisterReceiver(mReceiver);
     }
   };
+
+
 
   private final StreamHandler readResultsHandler = new StreamHandler() {
     @Override

@@ -25,6 +25,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+
     initPlatformState();
   }
 
@@ -42,13 +43,17 @@ class _MyAppState extends State<MyApp> {
     // showDialogSayingThatThisPermissionIsRequired());
     // }
     bool? isConnected = await bluetooth.isConnected;
-    List<BluetoothDevice> devices = [];
+    // List<BluetoothDevice> devices = [];
+     _devices.clear();
     try {
-      devices = await bluetooth.getBondedDevices();
+      _devices =  await bluetooth.startDiscovery();
+      debugPrint("devices: $_devices");
+
+      // devices = await bluetooth.getBondedDevices();
     } on PlatformException {
       debugPrint("Error");
     }
-
+    // bluetooth.startDiscovery();
     bluetooth.onStateChanged().listen((state) {
       switch (state) {
         case BlueThermalPrinter.CONNECTED:
@@ -107,7 +112,7 @@ class _MyAppState extends State<MyApp> {
 
     if (!mounted) return;
     setState(() {
-      _devices = devices;
+      _devices = _devices;
     });
 
     if (isConnected == true) {

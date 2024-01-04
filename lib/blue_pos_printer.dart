@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 class BlueThermalPrinter {
@@ -73,6 +74,16 @@ class BlueThermalPrinter {
     final List list = await (_channel.invokeMethod('getBondedDevices'));
     return list.map((map) => BluetoothDevice.fromMap(map)).toList();
   }
+
+  /// Discovering devices
+  Future<List<BluetoothDevice>> startDiscovery() async {
+   await (_channel.invokeMethod('startDiscovering'));
+    await Future.delayed(const Duration(seconds: 10));
+    var list = await (_channel.invokeMethod('OnScanResponse'));
+
+    return list.map<BluetoothDevice>((map) => BluetoothDevice.fromMap(map)).toList();
+  }
+
 
   ///isDeviceConnected(BluetoothDevice device)
   Future<bool?> isDeviceConnected(BluetoothDevice device) =>
