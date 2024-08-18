@@ -170,31 +170,28 @@ public class Utils {
 
     // Resize Image based on printer Paper Size Like 58 mm , 55 mm
 
+
     public static Bitmap resizeImage(String imagePath) {
-        Log.i("ResizeImage", "resizeImage: " + imagePath);
+         Log.i("ResizeImage", "resizeImage: " + imagePath);
         try {
+
             Bitmap originalBitmap = BitmapFactory.decodeFile(imagePath);
 
             // Set the target width for the printer
             int printerWidth = 58; // in millimeters
             int printerDPI = 175; // dots per inch, This will maintain width
 
-            // Convert the target width from millimeters to pixels
-            int targetWidthPixels = (int) (printerWidth / 25.4 * printerDPI);
+            // Convert the target width from millimeters to pixels (assuming 72 pixels per inch density)
+            int targetWidthPixels = (int) (printerWidth / 25.4  * printerDPI);
 
             int originalWidth = originalBitmap.getWidth();
             int originalHeight = originalBitmap.getHeight();
 
-            // Ensure that the target height is calculated to maintain the entire image
-            // This checks if the aspect ratio is correct to ensure complete image content
-            int targetHeightPixels = (int) (originalHeight * ((float) targetWidthPixels / originalWidth));
+            // Calculate the target height while maintaining the aspect ratio
+            int targetHeight = (int) (originalHeight * ((float) targetWidthPixels / originalWidth));
 
-            // If calculated height is lower than the original height, use the original height
-            if (targetHeightPixels < originalHeight) {
-                targetHeightPixels = originalHeight;
-            }
 
-            Bitmap resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, targetWidthPixels, targetHeightPixels, true);
+            Bitmap resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, targetWidthPixels, targetHeight, true);
 
             return resizedBitmap;
 
@@ -203,35 +200,6 @@ public class Utils {
         }
         return null;
     }
-//    public static Bitmap resizeImage(String imagePath) {
-//         Log.i("ResizeImage", "resizeImage: " + imagePath);
-//        try {
-//
-//            Bitmap originalBitmap = BitmapFactory.decodeFile(imagePath);
-//
-//            // Set the target width for the printer
-//            int printerWidth = 58; // in millimeters
-//            int printerDPI = 175; // dots per inch, This will maintain width
-//
-//            // Convert the target width from millimeters to pixels (assuming 72 pixels per inch density)
-//            int targetWidthPixels = (int) (printerWidth / 25.4  * printerDPI);
-//
-//            int originalWidth = originalBitmap.getWidth();
-//            int originalHeight = originalBitmap.getHeight();
-//
-//            // Calculate the target height while maintaining the aspect ratio
-//            int targetHeight = (int) (originalHeight * ((float) targetWidthPixels / originalWidth));
-//
-//
-//            Bitmap resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, targetWidthPixels, targetHeight, true);
-//
-//            return resizedBitmap;
-//
-//        } catch (Exception e) {
-//            System.out.println("Error resizing image: " + e.getMessage());
-//        }
-//        return null;
-//    }
 
 
 
