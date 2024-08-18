@@ -1208,10 +1208,10 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
 
       if (bmp != null) {
         byte [] command = Utils.decodeBitmap(bmp);
-        Log.i(TAG,"Printer Byte Data Length : "+command.length);
-        Log.i(TAG,"Printer Byte Data : "+command);
-        Log.i(TAG,"Byte Data : "+Utils.decodeBitmap(bmp));
-        Log.i(TAG,"Byte Data Length : "+Utils.decodeBitmap(bmp).length);
+//        Log.i(TAG,"Printer Byte Data Length : "+command.length);
+//        Log.i(TAG,"Printer Byte Data : "+command);
+//        Log.i(TAG,"Byte Data : "+Utils.decodeBitmap(bmp));
+//        Log.i(TAG,"Byte Data Length : "+Utils.decodeBitmap(bmp).length);
 
         byte marker = 0x0A;
         THREAD.write(command);
