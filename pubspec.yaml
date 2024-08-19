@@ -1,7 +1,7 @@
 name: pos_printer
 description: A new Flutter project.
-version: 0.0.1
-homepage:
+version: 0.0.2
+homepage: "familysofts.com"
 
 environment:
   sdk: '>=3.0.6 <4.0.0'
