@@ -1,6 +1,5 @@
 package com.example.pos_printer;
 
-
 import static java.lang.Math.log;
 
 import android.Manifest;
@@ -39,7 +38,6 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -52,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -67,16 +64,17 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
 
-
 /** PosPrinterPlugin */
-public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCallHandler, PluginRegistry.RequestPermissionsResultListener {
-  /// The MethodChannel that will the communication between Flutter and native Android
+public class PosPrinterPlugin
+    implements FlutterPlugin, ActivityAware, MethodCallHandler, PluginRegistry.RequestPermissionsResultListener {
+  /// The MethodChannel that will the communication between Flutter and native
+  /// Android
   ///
-  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
+  /// This local reference serves to register the plugin with the Flutter Engine
+  /// and unregister it
   /// when the Flutter Engine is detached from the Activity
   private MethodChannel channel;
   private Context activeContext;
-
 
   private static final String TAG = "BThermalPrinterPlugin";
   private static final String NAMESPACE = "pos_printer";
@@ -112,17 +110,13 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
   private boolean mIsScanning = false;
   private ScanCallback scanCallback;
 
-
-
   private final Map<Integer, OperationOnPermission> operationsOnPermission = new HashMap<>();
   private int lastEventId = 1452;
-
-
-
 
   private interface OperationOnPermission {
     void op(boolean granted, String permission);
   }
+
   public PosPrinterPlugin() {
   }
 
@@ -141,10 +135,10 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
   public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
     activityBinding = binding;
     setup(
-            pluginBinding.getBinaryMessenger(),
-            (Application) pluginBinding.getApplicationContext(),
-            activityBinding.getActivity(),
-            activityBinding);
+        pluginBinding.getBinaryMessenger(),
+        (Application) pluginBinding.getApplicationContext(),
+        activityBinding.getActivity(),
+        activityBinding);
   }
 
   @Override
@@ -162,12 +156,11 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
     detach();
   }
 
-
   private void setup(
-          final BinaryMessenger messenger,
-          final Application application,
-          final Activity activity,
-          final ActivityPluginBinding activityBinding) {
+      final BinaryMessenger messenger,
+      final Application application,
+      final Activity activity,
+      final ActivityPluginBinding activityBinding) {
     synchronized (initializationLock) {
       Log.i(TAG, "setup");
       this.activity = activity;
@@ -183,7 +176,6 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
       activityBinding.addRequestPermissionsResultListener(this);
     }
   }
-
 
   private void detach() {
     Log.i(TAG, "detach");
@@ -227,7 +219,7 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
   @Override
   public void onMethodCall(@NonNull MethodCall call, @NonNull Result rawResult) {
     Result result = new MethodResultWrapper(rawResult);
-  
+
     if (mBluetoothAdapter == null && !"isAvailable".equals(call.method)) {
       result.error("bluetooth_unavailable", "the device does not have bluetooth", null);
       return;
@@ -240,20 +232,19 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
         state(result);
         break;
       case "turnOffOn":
-         try {
-           if (mBluetoothAdapter.isEnabled()) {
-             // Handle when ble is on
+        try {
+          if (mBluetoothAdapter.isEnabled()) {
+            // Handle when ble is on
 
-           }
-           else {
-             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-             activity.startActivityForResult(enableBtIntent, 1);
-           }
-           result.success(true);
-         } catch (Exception ex){
-           result.error("Error",ex.getMessage(),exceptionToString(ex));
-         }
-          break;
+          } else {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            activity.startActivityForResult(enableBtIntent, 1);
+          }
+          result.success(true);
+        } catch (Exception ex) {
+          result.error("Error", ex.getMessage(), exceptionToString(ex));
+        }
+        break;
 
       // Do something when turn of ;
       case "isAvailable":
@@ -284,26 +275,27 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
 
       case "openSettings":
         ContextCompat.startActivity(context, new Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS),
-                null);
+            null);
         result.success(true);
         break;
 
       case "getBondedDevices":
         try {
 
-          if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 
             if (ContextCompat.checkSelfPermission(activity,
-                    Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED ||
-                    ContextCompat.checkSelfPermission(activity,
-                            Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED ||
-                    ContextCompat.checkSelfPermission(activity,
-                            Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(activity,
+                    Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
+                ||
+                ContextCompat.checkSelfPermission(activity,
+                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-              ActivityCompat.requestPermissions(activity,new String[]{
-                      Manifest.permission.BLUETOOTH_SCAN,
-                      Manifest.permission.BLUETOOTH_CONNECT,
-                      Manifest.permission.ACCESS_FINE_LOCATION,
+              ActivityCompat.requestPermissions(activity, new String[] {
+                  Manifest.permission.BLUETOOTH_SCAN,
+                  Manifest.permission.BLUETOOTH_CONNECT,
+                  Manifest.permission.ACCESS_FINE_LOCATION,
               }, 1);
 
               pendingResult = result;
@@ -311,11 +303,13 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
             }
           } else {
             if (ContextCompat.checkSelfPermission(activity,
-                    Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED||ContextCompat.checkSelfPermission(activity,
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(activity,
                     Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
               ActivityCompat.requestPermissions(activity,
-                      new String[] { Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION }, REQUEST_COARSE_LOCATION_PERMISSIONS);
+                  new String[] { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION },
+                  REQUEST_COARSE_LOCATION_PERMISSIONS);
 
               pendingResult = result;
               break;
@@ -425,7 +419,7 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
           int size = (int) arguments.get("size");
           String charset = (String) arguments.get("charset");
           String format = (String) arguments.get("format");
-          printLeftRight(result, string1, string2, size, charset,format);
+          printLeftRight(result, string1, string2, size, charset, format);
         } else {
           result.error("invalid_argument", "argument 'message' not found", null);
         }
@@ -438,7 +432,7 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
           int size = (int) arguments.get("size");
           String charset = (String) arguments.get("charset");
           String format = (String) arguments.get("format");
-          print3Column(result, string1, string2,string3, size, charset,format);
+          print3Column(result, string1, string2, string3, size, charset, format);
         } else {
           result.error("invalid_argument", "argument 'message' not found", null);
         }
@@ -452,23 +446,20 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
           int size = (int) arguments.get("size");
           String charset = (String) arguments.get("charset");
           String format = (String) arguments.get("format");
-          print4Column(result, string1, string2,string3,string4, size, charset,format);
+          print4Column(result, string1, string2, string3, string4, size, charset, format);
         } else {
           result.error("invalid_argument", "argument 'message' not found", null);
         }
         break;
       case "startDiscovering":
-        Log.d(TAG, "Starting discovery");
-      {
+        Log.d(TAG, "Starting discovery"); {
         deviceList.clear();
         discoverDevices();
         result.success(deviceList);
 
-
         break;
       }
-      case "OnScanResponse":
-      {
+      case "OnScanResponse": {
         result.success(deviceList);
         break;
       }
@@ -478,9 +469,11 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
         break;
     }
   }
-  List<Map<String,Object>> deviceList = new ArrayList<Map<String,Object>>();
+
+  List<Map<String, Object>> deviceList = new ArrayList<Map<String, Object>>();
   private final Handler handler = new Handler(Looper.getMainLooper());
   private static final long DISCOVERY_TIMEOUT = 10000; // 10 seconds
+
   private void discoverDevices() {
     context.registerReceiver(discoveryReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
     mBluetoothAdapter.startDiscovery();
@@ -491,45 +484,46 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
       }
     }, DISCOVERY_TIMEOUT);
   }
+
   private void stopDiscovery() {
 
     // Cancel discovery
     mBluetoothAdapter.cancelDiscovery();
   }
+
   private final BroadcastReceiver discoveryReceiver = new BroadcastReceiver() {
     public void onReceive(Context context, Intent intent) {
       String action = intent.getAction();
       if (BluetoothDevice.ACTION_FOUND.equals(action)) {
         BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
-
         // If device is already paired, skip it, because it's been listed already
-        if (device.getBondState() == BluetoothDevice.BOND_BONDED && !containsDeviceWithAddress(deviceList, device.getAddress())){
-            deviceList.add(
-                    new HashMap<String, Object>() {
-                        {
-                        put("name", device.getName());
-                        put("address", device.getAddress());
-                        put("type", device.getType());
-                        put("bondState", device.getBondState());
-                        }
-                    });
+        if (device.getBondState() == BluetoothDevice.BOND_BONDED
+            && !containsDeviceWithAddress(deviceList, device.getAddress())) {
+          deviceList.add(
+              new HashMap<String, Object>() {
+                {
+                  put("name", device.getName());
+                  put("address", device.getAddress());
+                  put("type", device.getType());
+                  put("bondState", device.getBondState());
+                }
+              });
         }
-
-
 
       }
     }
   };
-    // Helper method to check if the list contains a device with a specific address
-    private boolean containsDeviceWithAddress(List<Map<String, Object>> deviceList, String address) {
-      for (Map<String, Object> device : deviceList) {
-        if (address.equals(device.get("address"))) {
-          return true;
-        }
+
+  // Helper method to check if the list contains a device with a specific address
+  private boolean containsDeviceWithAddress(List<Map<String, Object>> deviceList, String address) {
+    for (Map<String, Object> device : deviceList) {
+      if (address.equals(device.get("address"))) {
+        return true;
       }
-      return false;
     }
+    return false;
+  }
 
   static String bytesToHex(byte[] bytes) {
     if (bytes == null) {
@@ -551,59 +545,52 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
 
     for (int i = 0; i < len; i += 2) {
       data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-              + Character.digit(s.charAt(i+1), 16));
+          + Character.digit(s.charAt(i + 1), 16));
     }
 
     return data;
   }
+
   // returns 128-bit representation
-  public String uuid128(Object uuid)
-  {
+  public String uuid128(Object uuid) {
     if (!(uuid instanceof UUID) && !(uuid instanceof String)) {
       throw new IllegalArgumentException("input must be UUID or String");
     }
 
     String s = uuid.toString();
 
-    if (s.length() == 4)
-    {
+    if (s.length() == 4) {
       // 16-bit uuid
       return String.format("0000%s-0000-1000-8000-00805f9b34fb", s).toLowerCase();
-    }
-    else if (s.length() == 8)
-    {
+    } else if (s.length() == 8) {
       // 32-bit uuid
       return String.format("%s-0000-1000-8000-00805f9b34fb", s).toLowerCase();
-    }
-    else
-    {
+    } else {
       // 128-bit uuid
       return s.toLowerCase();
     }
   }
 
-  private void invokeMethodUIThread(final String method, HashMap<String, Object> data)
-  {
+  private void invokeMethodUIThread(final String method, HashMap<String, Object> data) {
     new Handler(Looper.getMainLooper()).post(() -> {
-      //Could already be teared down at this moment
+      // Could already be teared down at this moment
       if (channel != null) {
         channel.invokeMethod(method, data);
       } else {
-//        log(FlutterBluePlusPlugin.LogLevel.WARNING, "invokeMethodUIThread: tried to call method on closed channel: " + method);
+        // log(FlutterBluePlusPlugin.LogLevel.WARNING, "invokeMethodUIThread: tried to
+        // call method on closed channel: " + method);
       }
     });
   }
-  private ScanCallback getScanCallback()
-  {
-    if(scanCallback == null) {
+
+  private ScanCallback getScanCallback() {
+    if (scanCallback == null) {
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        scanCallback = new ScanCallback()
-        {
+        scanCallback = new ScanCallback() {
           @Override
           @SuppressWarnings("unchecked") // type safety uses bluetooth_msgs.dart
-          public void onScanResult(int callbackType, ScanResult result)
-          {
+          public void onScanResult(int callbackType, ScanResult result) {
 
             super.onScanResult(callbackType, result);
             HashMap<String, Object> response = new HashMap<>();
@@ -617,22 +604,18 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
             response.put("name", device.getName());
             response.put("rssi", result.getRssi());
 
-
-
-
             invokeMethodUIThread("OnScanResponse", response);
           }
 
           @Override
-          public void onBatchScanResults(List<ScanResult> results)
-          {
+          public void onBatchScanResults(List<ScanResult> results) {
             super.onBatchScanResults(results);
           }
 
           @Override
-          public void onScanFailed(int errorCode)
-          {
-//            log(FlutterBluePlusPlugin.LogLevel.ERROR, "onScanFailed: " + scanFailedString(errorCode));
+          public void onScanFailed(int errorCode) {
+            // log(FlutterBluePlusPlugin.LogLevel.ERROR, "onScanFailed: " +
+            // scanFailedString(errorCode));
 
             super.onScanFailed(errorCode);
 
@@ -652,22 +635,26 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
   }
 
   static String scanFailedString(int value) {
-    switch(value) {
-      case ScanCallback.SCAN_FAILED_ALREADY_STARTED                : return "SCAN_FAILED_ALREADY_STARTED";
-      case ScanCallback.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED: return "SCAN_FAILED_APPLICATION_REGISTRATION_FAILED";
-      case ScanCallback.SCAN_FAILED_FEATURE_UNSUPPORTED            : return "SCAN_FAILED_FEATURE_UNSUPPORTED";
-      case ScanCallback.SCAN_FAILED_INTERNAL_ERROR      : return "SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES";
-      default: return "UNKNOWN_SCAN_ERROR (" + value + ")";
+    switch (value) {
+      case ScanCallback.SCAN_FAILED_ALREADY_STARTED:
+        return "SCAN_FAILED_ALREADY_STARTED";
+      case ScanCallback.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED:
+        return "SCAN_FAILED_APPLICATION_REGISTRATION_FAILED";
+      case ScanCallback.SCAN_FAILED_FEATURE_UNSUPPORTED:
+        return "SCAN_FAILED_FEATURE_UNSUPPORTED";
+      case ScanCallback.SCAN_FAILED_INTERNAL_ERROR:
+        return "SCAN_FAILED_OUT_OF_HARDWARE_RESOURCES";
+      default:
+        return "UNKNOWN_SCAN_ERROR (" + value + ")";
     }
   }
 
-  private void ensurePermissions(List<String> permissions, OperationOnPermission operation)
-  {
+  private void ensurePermissions(List<String> permissions, OperationOnPermission operation) {
     // only request permission we don't already have
     List<String> permissionsNeeded = new ArrayList<>();
     for (String permission : permissions) {
-      if (permission != null && ContextCompat.checkSelfPermission(context, permission)
-              != PackageManager.PERMISSION_GRANTED) {
+      if (permission != null
+          && ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
         permissionsNeeded.add(permission);
       }
     }
@@ -681,8 +668,7 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
     askPermission(permissionsNeeded, operation);
   }
 
-  private void askPermission(List<String> permissionsNeeded, OperationOnPermission operation)
-  {
+  private void askPermission(List<String> permissionsNeeded, OperationOnPermission operation) {
     // finished asking for permission? call callback
     if (permissionsNeeded.isEmpty()) {
       operation.op(true, null);
@@ -702,15 +688,14 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
     });
 
     ActivityCompat.requestPermissions(
-            activityBinding.getActivity(),
-            new String[]{nextPermission},
-            lastEventId);
+        activityBinding.getActivity(),
+        new String[] { nextPermission },
+        lastEventId);
 
     lastEventId++;
   }
 
-  private boolean isAdapterOn()
-  {
+  private boolean isAdapterOn() {
     // get adapterState, if we have permission
     try {
       return mBluetoothAdapter.getState() == BluetoothAdapter.STATE_ON;
@@ -719,17 +704,6 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
     }
   }
 
-
-
-
-
-
-
-
-
-
-
-
   /**
    * @param requestCode  requestCode
    * @param permissions  permissions
@@ -737,7 +711,8 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
    * @return boolean
    */
   @Override
-  public boolean onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+  public boolean onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+      @NonNull int[] grantResults) {
 
     if (requestCode == REQUEST_COARSE_LOCATION_PERMISSIONS) {
       if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -795,7 +770,6 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
     result.success(list);
   }
 
-
   /**
    * @param result  result
    * @param address address
@@ -811,9 +785,10 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
           return;
         }
 
-        if (THREAD != null && BluetoothDevice.ACTION_ACL_CONNECTED.equals(new Intent(BluetoothDevice.ACTION_ACL_CONNECTED).getAction())) {
+        if (THREAD != null && BluetoothDevice.ACTION_ACL_CONNECTED
+            .equals(new Intent(BluetoothDevice.ACTION_ACL_CONNECTED).getAction())) {
           result.success(true);
-        }else{
+        } else {
           result.success(false);
         }
 
@@ -980,7 +955,7 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
           THREAD.write(PrinterCommands.ESC_ALIGN_RIGHT);
           break;
       }
-      if(charset != null) {
+      if (charset != null) {
         THREAD.write(message.getBytes(charset));
       } else {
         THREAD.write(message.getBytes());
@@ -993,7 +968,7 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
     }
   }
 
-  private void printLeftRight(Result result, String msg1, String msg2, int size ,String charset,String format) {
+  private void printLeftRight(Result result, String msg1, String msg2, int size, String charset, String format) {
     byte[] cc = new byte[] { 0x1B, 0x21, 0x03 }; // 0- normal size text
     // byte[] cc1 = new byte[]{0x1B,0x21,0x00}; // 0- normal size text
     byte[] bb = new byte[] { 0x1B, 0x21, 0x08 }; // 1- only bold text
@@ -1024,10 +999,10 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
       }
       THREAD.write(PrinterCommands.ESC_ALIGN_CENTER);
       String line = String.format("%-15s %15s %n", msg1, msg2);
-      if(format != null) {
+      if (format != null) {
         line = String.format(format, msg1, msg2);
       }
-      if(charset != null) {
+      if (charset != null) {
         THREAD.write(line.getBytes(charset));
       } else {
         THREAD.write(line.getBytes());
@@ -1040,7 +1015,8 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
 
   }
 
-  private void print3Column(Result result, String msg1, String msg2, String msg3, int size ,String charset, String format) {
+  private void print3Column(Result result, String msg1, String msg2, String msg3, int size, String charset,
+      String format) {
     byte[] cc = new byte[] { 0x1B, 0x21, 0x03 }; // 0- normal size text
     // byte[] cc1 = new byte[]{0x1B,0x21,0x00}; // 0- normal size text
     byte[] bb = new byte[] { 0x1B, 0x21, 0x08 }; // 1- only bold text
@@ -1070,11 +1046,11 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
           break;
       }
       THREAD.write(PrinterCommands.ESC_ALIGN_CENTER);
-      String line = String.format("%-10s %10s %10s %n", msg1, msg2  , msg3);
-      if(format != null) {
+      String line = String.format("%-10s %10s %10s %n", msg1, msg2, msg3);
+      if (format != null) {
         line = String.format(format, msg1, msg2, msg3);
       }
-      if(charset != null) {
+      if (charset != null) {
         THREAD.write(line.getBytes(charset));
       } else {
         THREAD.write(line.getBytes());
@@ -1087,7 +1063,8 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
 
   }
 
-  private void print4Column(Result result, String msg1, String msg2,String msg3,String msg4, int size, String charset, String format) {
+  private void print4Column(Result result, String msg1, String msg2, String msg3, String msg4, int size, String charset,
+      String format) {
     byte[] cc = new byte[] { 0x1B, 0x21, 0x03 }; // 0- normal size text
     // byte[] cc1 = new byte[]{0x1B,0x21,0x00}; // 0- normal size text
     byte[] bb = new byte[] { 0x1B, 0x21, 0x08 }; // 1- only bold text
@@ -1117,11 +1094,11 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
           break;
       }
       THREAD.write(PrinterCommands.ESC_ALIGN_CENTER);
-      String line = String.format("%-8s %7s %7s %7s %n", msg1, msg2,msg3,msg4);
-      if(format != null) {
-        line = String.format(format, msg1, msg2,msg3,msg4);
+      String line = String.format("%-8s %7s %7s %7s %n", msg1, msg2, msg3, msg4);
+      if (format != null) {
+        line = String.format(format, msg1, msg2, msg3, msg4);
       }
-      if(charset != null) {
+      if (charset != null) {
         THREAD.write(line.getBytes(charset));
       } else {
         THREAD.write(line.getBytes());
@@ -1154,13 +1131,13 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
       return;
     }
     try {
-      byte[] clearCommand = new byte[]{0x1B, 0x40};
+      byte[] clearCommand = new byte[] { 0x1B, 0x40 };
       System.out.println("CLear Printer Buffer Data");
-//    THREAD.write(PrinterCommands.FEED_PAPER_AND_CUT);
+      // THREAD.write(PrinterCommands.FEED_PAPER_AND_CUT);
 
       THREAD.write(clearCommand);
-//      THREAD.outputStream.flush();
-//      THREAD.cancel();
+      // THREAD.outputStream.flush();
+      // THREAD.cancel();
       result.success(true);
     } catch (Exception ex) {
       Log.e(TAG, ex.getMessage(), ex);
@@ -1204,14 +1181,14 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
     try {
       Bitmap bmp = Utils.resizeImage(pathImage);
 
-      System.out.println("Bitmap Size : "+bmp.getWidth());
+      System.out.println("Bitmap Size : " + bmp.getWidth());
 
       if (bmp != null) {
-        byte [] command = Utils.decodeBitmap(bmp);
-//        Log.i(TAG,"Printer Byte Data Length : "+command.length);
-//        Log.i(TAG,"Printer Byte Data : "+command);
-//        Log.i(TAG,"Byte Data : "+Utils.decodeBitmap(bmp));
-//        Log.i(TAG,"Byte Data Length : "+Utils.decodeBitmap(bmp).length);
+        byte[] command = Utils.decodeBitmap(bmp);
+        // Log.i(TAG,"Printer Byte Data Length : "+command.length);
+        // Log.i(TAG,"Printer Byte Data : "+command);
+        // Log.i(TAG,"Byte Data : "+Utils.decodeBitmap(bmp));
+        // Log.i(TAG,"Byte Data Length : "+Utils.decodeBitmap(bmp).length);
 
         byte marker = 0x0A;
         THREAD.write(command);
@@ -1231,7 +1208,6 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
     }
   }
 
-
   private void printImageBytes(Result result, byte[] bytes) {
     if (THREAD == null) {
       result.error("write_error", "not connected", null);
@@ -1241,7 +1217,7 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
       Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
       if (bmp != null) {
         byte[] command = Utils.decodeBitmap(bmp);
-//        THREAD.write(PrinterCommands.ESC_ALIGN_CENTER);
+        // THREAD.write(PrinterCommands.ESC_ALIGN_CENTER);
         THREAD.write(command);
       } else {
         Log.e("Print Photo error", "the file isn't exists");
@@ -1391,8 +1367,6 @@ public class PosPrinterPlugin implements FlutterPlugin, ActivityAware, MethodCal
       context.unregisterReceiver(mReceiver);
     }
   };
-
-
 
   private final StreamHandler readResultsHandler = new StreamHandler() {
     @Override
