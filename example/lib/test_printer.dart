@@ -24,7 +24,7 @@ class TestPrint {
     String prescriptionImage = 'assets/prescription.png';
     String lowPrescription = 'assets/low_prescription.png';
     String longPrescription = 'assets/long_prescription.jpg';
-    String rawPrescription = 'assets/raw_prescription.png';
+    String rawPrescription = 'assets/long.jpg';
     // String lowRaw = 'assets/low_raw.png';
     String finalPrescription = 'assets/final_pres.png';
 
@@ -39,7 +39,7 @@ class TestPrint {
         File('${temDir.path}/${DateTime.now().toIso8601String()}.png');
     final locaiton = await fileImage.writeAsBytes(imageBytesFromAsset);
     debugPrint('fileImage: ${locaiton.path}');
-      //  temDir.delete(recursive: true);
+    //  temDir.delete(recursive: true);
 
     ///image from Network
 
