@@ -11,6 +11,9 @@ dependencies:
   flutter:
     sdk: flutter
   path_provider: ^2.0.15
+  flutter_blue_serial:
+    git:
+      url: https://github.com/Tanvirul-swe/flutter_blue_serial
   
   flutter_web_plugins:
     sdk: flutter
