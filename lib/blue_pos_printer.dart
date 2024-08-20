@@ -2,7 +2,6 @@
 
 import 'dart:async';
 
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 class BlueThermalPrinter {
@@ -55,46 +54,46 @@ class BlueThermalPrinter {
   Stream<String> onRead() =>
       _readChannel.receiveBroadcastStream().map((buffer) => buffer.toString());
 
-  Future<bool?> get isAvailable async =>
-      await _channel.invokeMethod('isAvailable');
+  // Future<bool?> get isAvailable async =>
+  //     await _channel.invokeMethod('isAvailable');
 
-  Future<bool?> get isOn async => await _channel.invokeMethod('isOn');
+  // Future<bool?> get isOn async => await _channel.invokeMethod('isOn');
 
-  Future<bool?> get turnOffOn async => await _channel.invokeMethod('turnOffOn');
-
-
-  Future<bool?> get isConnected async =>
-      await _channel.invokeMethod('isConnected');
-
-  Future<bool?> get openSettings async =>
-      await _channel.invokeMethod('openSettings');
-
-  ///getBondedDevices()
-  Future<List<BluetoothDevice>> getBondedDevices() async {
-    final List list = await (_channel.invokeMethod('getBondedDevices'));
-    return list.map((map) => BluetoothDevice.fromMap(map)).toList();
-  }
-
-  /// Discovering devices
-  Future<List<BluetoothDevice>> startDiscovery() async {
-   await (_channel.invokeMethod('startDiscovering'));
-    await Future.delayed(const Duration(seconds: 10));
-    var list = await (_channel.invokeMethod('OnScanResponse'));
-
-    return list.map<BluetoothDevice>((map) => BluetoothDevice.fromMap(map)).toList();
-  }
+  // Future<bool?> get turnOffOn async => await _channel.invokeMethod('turnOffOn');
 
 
-  ///isDeviceConnected(BluetoothDevice device)
-  Future<bool?> isDeviceConnected(BluetoothDevice device) =>
-      _channel.invokeMethod('isDeviceConnected', device.toMap());
+  // Future<bool?> get isConnected async =>
+  //     await _channel.invokeMethod('isConnected');
 
-  ///connect(BluetoothDevice device)
-  Future<dynamic> connect(BluetoothDevice device) =>
-      _channel.invokeMethod('connect', device.toMap());
+  // Future<bool?> get openSettings async =>
+  //     await _channel.invokeMethod('openSettings');
 
-  ///disconnect()
-  Future<dynamic> disconnect() => _channel.invokeMethod('disconnect');
+  // ///getBondedDevices()
+  // Future<List<BluetoothDevice>> getBondedDevices() async {
+  //   final List list = await (_channel.invokeMethod('getBondedDevices'));
+  //   return list.map((map) => BluetoothDevice.fromMap(map)).toList();
+  // }
+
+  // /// Discovering devices
+  // Future<List<BluetoothDevice>> startDiscovery() async {
+  //  await (_channel.invokeMethod('startDiscovering'));
+  //   await Future.delayed(const Duration(seconds: 10));
+  //   var list = await (_channel.invokeMethod('OnScanResponse'));
+
+  //   return list.map<BluetoothDevice>((map) => BluetoothDevice.fromMap(map)).toList();
+  // }
+
+
+  // ///isDeviceConnected(BluetoothDevice device)
+  // Future<bool?> isDeviceConnected(BluetoothDevice device) =>
+  //     _channel.invokeMethod('isDeviceConnected', device.toMap());
+
+  // ///connect(BluetoothDevice device)
+  // Future<dynamic> connect(BluetoothDevice device) =>
+  //     _channel.invokeMethod('connect', device.toMap());
+
+  // ///disconnect()
+  // Future<dynamic> disconnect() => _channel.invokeMethod('disconnect');
 
   ///write(String message)
   Future<dynamic> write(String message) =>
@@ -183,30 +182,30 @@ class BlueThermalPrinter {
       });
 }
 
-class BluetoothDevice {
-  final String? name;
-  final String? address;
-  final int type = 0;
-  bool connected = false;
+// class BluetoothDevice {
+//   final String? name;
+//   final String? address;
+//   final int type = 0;
+//   bool connected = false;
 
-  BluetoothDevice(this.name, this.address);
+//   BluetoothDevice(this.name, this.address);
 
-  BluetoothDevice.fromMap(Map map)
-      : name = map['name'],
-        address = map['address'];
+//   BluetoothDevice.fromMap(Map map)
+//       : name = map['name'],
+//         address = map['address'];
 
-  Map<String, dynamic> toMap() => {
-        'name': name,
-        'address': address,
-        'type': type,
-        'connected': connected,
-      };
+//   Map<String, dynamic> toMap() => {
+//         'name': name,
+//         'address': address,
+//         'type': type,
+//         'connected': connected,
+//       };
 
-  @override
-  operator ==(Object other) {
-    return other is BluetoothDevice && other.address == address;
-  }
+//   @override
+//   operator ==(Object other) {
+//     return other is BluetoothDevice && other.address == address;
+//   }
 
-  @override
-  int get hashCode => address.hashCode;
-}
+//   @override
+//   int get hashCode => address.hashCode;
+// }

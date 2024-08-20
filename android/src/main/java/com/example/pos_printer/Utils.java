@@ -211,12 +211,12 @@ public class Utils {
     public static Bitmap resizeImage(String imagePath) {
         try {
             Bitmap originalBitmap = BitmapFactory.decodeFile(imagePath);
-    
+
             if (originalBitmap == null) {
                 Log.e("ProcessImage", "Error: Could not decode the image file.");
                 return null;
             }
-    
+
             // Convert the image to grayscale
             Bitmap grayscaleBitmap = convertToGrayscale(originalBitmap);
             // Resize the image to fit the printer's resolution
@@ -225,21 +225,23 @@ public class Utils {
             int originalHeight = grayscaleBitmap.getHeight();
             float aspectRatio = (float) originalHeight / originalWidth;
             int targetHeightPixels = (int) (printerWidthPixels * aspectRatio);
-    
-            Bitmap resizedBitmap = Bitmap.createScaledBitmap(grayscaleBitmap, printerWidthPixels, targetHeightPixels, true);
-    
+
+            Bitmap resizedBitmap = Bitmap.createScaledBitmap(grayscaleBitmap, printerWidthPixels, targetHeightPixels,
+                    true);
+
             // Return the processed bitmap
             return resizedBitmap;
-    
+
         } catch (Exception e) {
             Log.e("ProcessImage", "Error processing image: " + e.getMessage());
         }
         return null;
     }
+
     private static Bitmap convertToGrayscale(Bitmap bmpOriginal) {
         int width = bmpOriginal.getWidth();
         int height = bmpOriginal.getHeight();
-    
+
         Bitmap bmpGrayscale = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(bmpGrayscale);
         Paint paint = new Paint();
@@ -248,9 +250,8 @@ public class Utils {
         ColorMatrixColorFilter f = new ColorMatrixColorFilter(cm);
         paint.setColorFilter(f);
         c.drawBitmap(bmpOriginal, 0, 0, paint);
-    
+
         return bmpGrayscale;
     }
-    
 
 }

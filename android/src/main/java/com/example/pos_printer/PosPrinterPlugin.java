@@ -1173,40 +1173,7 @@ public class PosPrinterPlugin
     }
   }
 
-  // private void printImage(Result result, String pathImage) {
-  // if (THREAD == null) {
-  // result.error("write_error", "not connected", null);
-  // return;
-  // }
-  // try {
-  // Bitmap bmp = Utils.resizeImage(pathImage);
 
-  // System.out.println("Bitmap Size : " + bmp.getWidth());
-
-  // if (bmp != null) {
-  // byte[] command = Utils.decodeBitmap(bmp);
-  // // Log.i(TAG,"Printer Byte Data Length : "+command.length);
-  // // Log.i(TAG,"Printer Byte Data : "+command);
-  // // Log.i(TAG,"Byte Data : "+Utils.decodeBitmap(bmp));
-  // // Log.i(TAG,"Byte Data Length : "+Utils.decodeBitmap(bmp).length);
-
-  // byte marker = 0x0A;
-  // THREAD.write(command);
-  // THREAD.outputStream.flush();
-  // THREAD.write(PrinterCommands.INIT);
-  // THREAD.outputStream.flush();
-  // THREAD.outputStream.close();
-  // THREAD.inputStream.close();
-  // THREAD.mmSocket.close();
-  // } else {
-  // Log.e("Print Photo error", "the file isn't exists");
-  // }
-  // result.success(true);
-  // } catch (Exception ex) {
-  // Log.e(TAG, ex.getMessage(), ex);
-  // result.error("write_error", ex.getMessage(), exceptionToString(ex));
-  // }
-  // }
   private void printImage(Result result, String pathImage) {
     if (THREAD == null) {
       result.error("write_error", "not connected", null);
