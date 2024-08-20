@@ -219,7 +219,6 @@ public class Utils {
     
             // Convert the image to grayscale
             Bitmap grayscaleBitmap = convertToGrayscale(originalBitmap);
-    
             // Resize the image to fit the printer's resolution
             int printerWidthPixels = 385; // Change this value according to your printer's max width
             int originalWidth = grayscaleBitmap.getWidth();

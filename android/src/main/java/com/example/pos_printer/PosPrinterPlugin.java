@@ -1216,24 +1216,26 @@ public class PosPrinterPlugin
       Bitmap bmp = Utils.resizeImage(pathImage);
 
       if (bmp != null) {
-        byte[] command = Utils.decodeBitmap(bmp);
+        int chunkHeight = 24; // Adjust this as needed for your printer
+        int width = bmp.getWidth();
+        int height = bmp.getHeight();
 
-        if (command != null) {
-          // Sending the image data to the printer
-          THREAD.write(command);
-          THREAD.outputStream.flush();
+        for (int y = 0; y < height; y += chunkHeight) {
+          int effectiveHeight = Math.min(chunkHeight, height - y);
+          Bitmap chunkBitmap = Bitmap.createBitmap(bmp, 0, y, width, effectiveHeight);
 
-          // Adding line feed to ensure the image prints correctly
-          byte[] lineFeed = new byte[] { 0x0A };
-          THREAD.write(lineFeed);
-          THREAD.outputStream.flush();
-
-          // Sending the initialization command after the image has been printed
-          THREAD.write(PrinterCommands.INIT);
-          THREAD.outputStream.flush();
-        } else {
-          Log.e("Print Photo error", "Failed to decode bitmap to ESC/POS commands");
+          byte[] command = Utils.decodeBitmap(chunkBitmap);
+          if (command != null) {
+            THREAD.write(command);
+            THREAD.outputStream.flush();
+          }
         }
+
+        // After all chunks are sent, send a line feed and initialization command
+        byte[] lineFeed = new byte[] { 0x0A };
+        THREAD.write(lineFeed);
+        THREAD.write(PrinterCommands.INIT);
+        THREAD.outputStream.flush();
 
         // Clean up resources
         THREAD.outputStream.close();
