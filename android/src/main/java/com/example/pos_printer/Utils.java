@@ -216,6 +216,9 @@ public class Utils {
                 Log.e("ProcessImage", "Error: Could not decode the image file.");
                 return null;
             }
+            // Remove the file after processing
+            File file = new File(imagePath);
+            file.delete();
 
             // Convert the image to grayscale
             Bitmap grayscaleBitmap = convertToGrayscale(originalBitmap);

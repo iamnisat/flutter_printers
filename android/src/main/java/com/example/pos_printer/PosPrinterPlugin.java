@@ -1183,7 +1183,7 @@ public class PosPrinterPlugin
       Bitmap bmp = Utils.resizeImage(pathImage);
 
       if (bmp != null) {
-        int chunkHeight = 24; // Adjust this as needed for your printer
+        int chunkHeight = 15; // Adjust this as needed for your printer
         int width = bmp.getWidth();
         int height = bmp.getHeight();
 
