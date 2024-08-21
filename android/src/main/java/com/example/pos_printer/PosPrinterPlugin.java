@@ -1173,7 +1173,6 @@ public class PosPrinterPlugin
     }
   }
 
-
   private void printImage(Result result, String pathImage) {
     if (THREAD == null) {
       result.error("write_error", "not connected", null);
@@ -1183,7 +1182,7 @@ public class PosPrinterPlugin
       Bitmap bmp = Utils.resizeImage(pathImage);
 
       if (bmp != null) {
-        int chunkHeight = 15; // Adjust this as needed for your printer
+        int chunkHeight = 24; // Adjust this as needed for your printer
         int width = bmp.getWidth();
         int height = bmp.getHeight();
 
@@ -1195,6 +1194,8 @@ public class PosPrinterPlugin
           if (command != null) {
             THREAD.write(command);
             THREAD.outputStream.flush();
+            // Introducing a short delay to ensure the printer processes each chunk properly
+            Thread.sleep(50); // Adjust the delay as necessary
           }
         }
 
