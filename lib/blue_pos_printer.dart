@@ -20,14 +20,11 @@ class BlueThermalPrinter {
 
   static const String namespace = 'pos_printer';
 
-  static const MethodChannel _channel =
-      MethodChannel('$namespace/methods');
+  static const MethodChannel _channel = MethodChannel('$namespace/methods');
 
-  static const EventChannel _readChannel =
-      EventChannel('$namespace/read');
+  static const EventChannel _readChannel = EventChannel('$namespace/read');
 
-  static const EventChannel _stateChannel =
-      EventChannel('$namespace/state');
+  static const EventChannel _stateChannel = EventChannel('$namespace/state');
 
   final StreamController<MethodCall> _methodStreamController =
       StreamController.broadcast();
@@ -40,7 +37,7 @@ class BlueThermalPrinter {
     });
   }
 
-  static final BlueThermalPrinter _instance =  BlueThermalPrinter._();
+  static final BlueThermalPrinter _instance = BlueThermalPrinter._();
 
   static BlueThermalPrinter get instance => _instance;
 
@@ -62,7 +59,6 @@ class BlueThermalPrinter {
 
   Future<bool?> get turnOffOn async => await _channel.invokeMethod('turnOffOn');
 
-
   Future<bool?> get isConnected async =>
       await _channel.invokeMethod('isConnected');
 
@@ -70,20 +66,21 @@ class BlueThermalPrinter {
       await _channel.invokeMethod('openSettings');
 
   ///getBondedDevices()
-  Future<List<BluetoothDevice>> getBondedDevices() async {
-    final List list = await (_channel.invokeMethod('getBondedDevices'));
+  Future<List<BluetoothDevice>> getBondedDevices({required DeviceType type}) async {
+    final List list = await (_channel.invokeMethod('getBondedDevices', {'deviceType': type.index}));
     return list.map((map) => BluetoothDevice.fromMap(map)).toList();
   }
 
   /// Discovering devices
   Future<List<BluetoothDevice>> startDiscovery() async {
-   await (_channel.invokeMethod('startDiscovering'));
+    await (_channel.invokeMethod('startDiscovering'));
     await Future.delayed(const Duration(seconds: 10));
     var list = await (_channel.invokeMethod('OnScanResponse'));
 
-    return list.map<BluetoothDevice>((map) => BluetoothDevice.fromMap(map)).toList();
+    return list
+        .map<BluetoothDevice>((map) => BluetoothDevice.fromMap(map))
+        .toList();
   }
-
 
   ///isDeviceConnected(BluetoothDevice device)
   Future<bool?> isDeviceConnected(BluetoothDevice device) =>
@@ -182,6 +179,8 @@ class BlueThermalPrinter {
         'format': format
       });
 }
+
+enum DeviceType { PRINTER, AUNKUR }
 
 class BluetoothDevice {
   final String? name;

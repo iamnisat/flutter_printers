@@ -6,6 +6,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothSocket;
@@ -315,7 +316,7 @@ public class PosPrinterPlugin
               break;
             }
           }
-          getBondedDevices(result);
+          getBondedDevices(result,arguments.containsKey("deviceType") ? (int) arguments.get("deviceType") : 0);
 
         } catch (Exception ex) {
           result.error("Error", ex.getMessage(), exceptionToString(ex));
@@ -716,7 +717,7 @@ public class PosPrinterPlugin
 
     if (requestCode == REQUEST_COARSE_LOCATION_PERMISSIONS) {
       if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-        getBondedDevices(pendingResult);
+        getBondedDevices(pendingResult,0);
       } else {
         pendingResult.error("no_permissions", "this plugin requires location permissions for scanning", null);
         pendingResult = null;
@@ -753,18 +754,29 @@ public class PosPrinterPlugin
   /**
    * @param result result
    */
-  private void getBondedDevices(Result result) {
+  private void getBondedDevices(Result result,int deviceType) {
 
     List<Map<String, Object>> list = new ArrayList<>();
-
+   
     for (BluetoothDevice device : mBluetoothAdapter.getBondedDevices()) {
-      Map<String, Object> ret = new HashMap<>();
-      ret.put("address", device.getAddress());
-      ret.put("name", device.getName());
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-        ret.put("type", device.getType());
+      BluetoothClass bluetoothClass = device.getBluetoothClass();
+      if (bluetoothClass == null) {
+        continue;
+        
       }
-      list.add(ret);
+      int deviceClass ;
+      if (deviceType==0){
+        deviceClass = 1664;
+      }
+      else{
+        deviceClass = 272;
+      }
+      if(bluetoothClass.getDeviceClass() == deviceClass) {
+        Map<String, Object> ret = new HashMap<>();
+        ret.put("address", device.getAddress());
+        ret.put("name", device.getName());
+        list.add(ret);
+      }
     }
 
     result.success(list);

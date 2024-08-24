@@ -49,7 +49,10 @@ class _MyAppState extends State<MyApp> {
       _devices =  await bluetooth.startDiscovery();
       debugPrint("devices: $_devices");
 
-      // devices = await bluetooth.getBondedDevices();
+     List<BluetoothDevice>  bondDevice =  await bluetooth.getBondedDevices(type: DeviceType.PRINTER);
+     for (var element in bondDevice) {
+      debugPrint("====Printer Name: ${element.name}");
+     }
     } on PlatformException {
       debugPrint("Error");
     }
