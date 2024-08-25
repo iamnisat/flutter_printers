@@ -1185,52 +1185,79 @@ public class PosPrinterPlugin
     }
   }
 
-  private void printImage(Result result, String pathImage) {
+  private void printImage(final Result result, final String pathImage) {
     if (THREAD == null) {
       result.error("write_error", "not connected", null);
       return;
     }
-    try {
-      Bitmap bmp = Utils.resizeImage(pathImage);
 
-      if (bmp != null) {
-        int chunkHeight = 24; // Adjust this as needed for your printer
-        int width = bmp.getWidth();
-        int height = bmp.getHeight();
+    // Create a new thread to handle the printing process
+    Thread printThread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            try {
+                Bitmap bmp = Utils.resizeImage(pathImage);
 
-        for (int y = 0; y < height; y += chunkHeight) {
-          int effectiveHeight = Math.min(chunkHeight, height - y);
-          Bitmap chunkBitmap = Bitmap.createBitmap(bmp, 0, y, width, effectiveHeight);
+                if (bmp != null) {
+                    int chunkHeight = 24; // Adjust this as needed for your printer
+                    int width = bmp.getWidth();
+                    int height = bmp.getHeight();
 
-          byte[] command = Utils.decodeBitmap(chunkBitmap);
-          if (command != null) {
-            THREAD.write(command);
-            THREAD.outputStream.flush();
-            // Introducing a short delay to ensure the printer processes each chunk properly
-            Thread.sleep(50); // Adjust the delay as necessary
-          }
+                    for (int y = 0; y < height; y += chunkHeight) {
+                        int effectiveHeight = Math.min(chunkHeight, height - y);
+                        Bitmap chunkBitmap = Bitmap.createBitmap(bmp, 0, y, width, effectiveHeight);
+
+                        byte[] command = Utils.decodeBitmap(chunkBitmap);
+                        if (command != null) {
+                            THREAD.write(command);
+                            THREAD.outputStream.flush();
+                            // Introducing a short delay to ensure the printer processes each chunk properly
+                            Thread.sleep(50); // Adjust the delay as necessary
+                        }
+                    }
+
+                    // After all chunks are sent, send a line feed and initialization command
+                    byte[] lineFeed = new byte[] { 0x0A };
+                    THREAD.write(lineFeed);
+                    THREAD.write(PrinterCommands.INIT);
+                    THREAD.outputStream.flush();
+
+                    // Clean up resources
+                    THREAD.outputStream.close();
+                    THREAD.inputStream.close();
+                    THREAD.mmSocket.close();
+                } else {
+                    Log.e("Print Photo error", "Bitmap is null, possibly image not found or couldn't be resized");
+                }
+
+                // Notify the result on success
+                result.success(true);
+            } catch (Exception ex) {
+                Log.e(TAG, ex.getMessage(), ex);
+                // Notify the result on error
+                result.error("write_error", ex.getMessage(), exceptionToString(ex));
+            } finally {
+                // Dispose of the thread after the work is done
+                disposeThread();
+            }
         }
+    });
 
-        // After all chunks are sent, send a line feed and initialization command
-        byte[] lineFeed = new byte[] { 0x0A };
-        THREAD.write(lineFeed);
-        THREAD.write(PrinterCommands.INIT);
-        THREAD.outputStream.flush();
+    printThread.start(); // Start the new thread
+}
 
-        // Clean up resources
-        THREAD.outputStream.close();
-        THREAD.inputStream.close();
-        THREAD.mmSocket.close();
-      } else {
-        Log.e("Print Photo error", "Bitmap is null, possibly image not found or couldn't be resized");
-      }
-
-      result.success(true);
-    } catch (Exception ex) {
-      Log.e(TAG, ex.getMessage(), ex);
-      result.error("write_error", ex.getMessage(), exceptionToString(ex));
+private void disposeThread() {
+    if (THREAD != null) {
+        try {
+            THREAD.outputStream.close();
+            THREAD.inputStream.close();
+            THREAD.mmSocket.close();
+            THREAD = null;
+        } catch (Exception e) {
+            Log.e(TAG, "Error disposing thread", e);
+        }
     }
-  }
+}
 
   private void printImageBytes(Result result, byte[] bytes) {
     if (THREAD == null) {
