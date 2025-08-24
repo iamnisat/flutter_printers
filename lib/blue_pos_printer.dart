@@ -66,8 +66,12 @@ class BlueThermalPrinter {
       await _channel.invokeMethod('openSettings');
 
   ///getBondedDevices()
-  Future<List<BluetoothDevice>> getBondedDevices({required DeviceType type}) async {
-    final List list = await (_channel.invokeMethod('getBondedDevices', {'deviceType': type.index}));
+  Future<List<BluetoothDevice>> getBondedDevices({
+    required DeviceType type,
+  }) async {
+    final List list = await (_channel.invokeMethod('getBondedDevices', {
+      'deviceType': type.index,
+    }));
     return list.map((map) => BluetoothDevice.fromMap(map)).toList();
   }
 
@@ -102,14 +106,17 @@ class BlueThermalPrinter {
       _channel.invokeMethod('writeBytes', {'message': message});
 
   ///printCustom(String message, int size, int align,{String? charset})
-  Future<dynamic> printCustom(String message, int size, int align,
-          {String? charset}) =>
-      _channel.invokeMethod('printCustom', {
-        'message': message,
-        'size': size,
-        'align': align,
-        'charset': charset
-      });
+  Future<dynamic> printCustom(
+    String message,
+    int size,
+    int align, {
+    String? charset,
+  }) => _channel.invokeMethod('printCustom', {
+    'message': message,
+    'size': size,
+    'align': align,
+    'charset': charset,
+  });
 
   ///printNewLine()
   Future<dynamic> printNewLine() => _channel.invokeMethod('printNewLine');
@@ -133,54 +140,70 @@ class BlueThermalPrinter {
 
   ///printQRcode(String textToQR, int width, int height, int align)
   Future<dynamic> printQRcode(
-          String textToQR, int width, int height, int align) =>
-      _channel.invokeMethod('printQRcode', {
-        'textToQR': textToQR,
-        'width': width,
-        'height': height,
-        'align': align
-      });
+    String textToQR,
+    int width,
+    int height,
+    int align,
+  ) => _channel.invokeMethod('printQRcode', {
+    'textToQR': textToQR,
+    'width': width,
+    'height': height,
+    'align': align,
+  });
 
   ///printLeftRight(String string1, String string2, int size,{String? charset, String? format})
-  Future<dynamic> printLeftRight(String string1, String string2, int size,
-          {String? charset, String? format}) =>
-      _channel.invokeMethod('printLeftRight', {
-        'string1': string1,
-        'string2': string2,
-        'size': size,
-        'charset': charset,
-        'format': format
-      });
+  Future<dynamic> printLeftRight(
+    String string1,
+    String string2,
+    int size, {
+    String? charset,
+    String? format,
+  }) => _channel.invokeMethod('printLeftRight', {
+    'string1': string1,
+    'string2': string2,
+    'size': size,
+    'charset': charset,
+    'format': format,
+  });
 
   ///print3Column(String string1, String string2, String string3, int size,{String? charset, String? format})
   Future<dynamic> print3Column(
-          String string1, String string2, String string3, int size,
-          {String? charset, String? format}) =>
-      _channel.invokeMethod('print3Column', {
-        'string1': string1,
-        'string2': string2,
-        'string3': string3,
-        'size': size,
-        'charset': charset,
-        'format': format
-      });
+    String string1,
+    String string2,
+    String string3,
+    int size, {
+    String? charset,
+    String? format,
+  }) => _channel.invokeMethod('print3Column', {
+    'string1': string1,
+    'string2': string2,
+    'string3': string3,
+    'size': size,
+    'charset': charset,
+    'format': format,
+  });
 
   ///print4Column(String string1, String string2, String string3,String string4, int size,{String? charset, String? format})
-  Future<dynamic> print4Column(String string1, String string2, String string3,
-          String string4, int size,
-          {String? charset, String? format}) =>
-      _channel.invokeMethod('print4Column', {
-        'string1': string1,
-        'string2': string2,
-        'string3': string3,
-        'string4': string4,
-        'size': size,
-        'charset': charset,
-        'format': format
-      });
+  Future<dynamic> print4Column(
+    String string1,
+    String string2,
+    String string3,
+    String string4,
+    int size, {
+    String? charset,
+    String? format,
+  }) => _channel.invokeMethod('print4Column', {
+    'string1': string1,
+    'string2': string2,
+    'string3': string3,
+    'string4': string4,
+    'size': size,
+    'charset': charset,
+    'format': format,
+  });
 }
 
-enum DeviceType { PRINTER, AUNKUR }
+enum DeviceType { PRINTER, AUNKUR, WEIGHT_MACHINE, PROFILE }
 
 class BluetoothDevice {
   final String? name;
@@ -191,15 +214,15 @@ class BluetoothDevice {
   BluetoothDevice(this.name, this.address);
 
   BluetoothDevice.fromMap(Map map)
-      : name = map['name'],
-        address = map['address'];
+    : name = map['name'],
+      address = map['address'];
 
   Map<String, dynamic> toMap() => {
-        'name': name,
-        'address': address,
-        'type': type,
-        'connected': connected,
-      };
+    'name': name,
+    'address': address,
+    'type': type,
+    'connected': connected,
+  };
 
   @override
   operator ==(Object other) {
